@@ -9,15 +9,12 @@ import {
 const AdminCategories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [msg, setMsg] = useState("");
-
-  // Form fields
+  const [editingId, setEditingId] = useState(null);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [msg, setMsg] = useState("");
 
   useEffect(() => {
     adminGetAllCategories().then((data) => {
@@ -26,7 +23,6 @@ const AdminCategories = () => {
     });
   }, []);
 
-  // Name se slug auto-generate karo (sirf add mode me)
   const handleNameChange = (e) => {
     setName(e.target.value);
     if (!editingId) {
@@ -45,18 +41,18 @@ const AdminCategories = () => {
   };
 
   const handleAddClick = () => {
-    resetForm(true);
+    resetForm();
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const resetForm = (clearMsg = true) => {
+  const resetForm = () => {
     setEditingId(null);
     setName("");
     setSlug("");
     setImageFile(null);
     setShowForm(false);
-    if (clearMsg) setMsg("");
+    setMsg("");
   };
 
   const handleSubmit = async (e) => {
@@ -70,7 +66,6 @@ const AdminCategories = () => {
 
     setSubmitting(true);
 
-    // FormData banao — image upload ke liye zaroori hai
     const formData = new FormData();
     formData.append("name", name);
     formData.append("slug", slug);
@@ -82,12 +77,12 @@ const AdminCategories = () => {
       if (editingId) {
         const data = await adminUpdateCategory(editingId, formData);
         setCategories(categories.map((c) => (c._id === editingId ? data.category : c)));
-        resetForm(false);
+        resetForm();
         setMsg("Category updated successfully!");
       } else {
         const data = await adminCreateCategory(formData);
         setCategories([...categories, data.category]);
-        resetForm(false);
+        resetForm();
         setMsg("Category created successfully!");
       }
     } catch (err) {
@@ -104,7 +99,7 @@ const AdminCategories = () => {
       setCategories(categories.filter((c) => c._id !== id));
       setMsg("Category deleted successfully!");
     } catch (err) {
-      setMsg(err?.response?.data?.message || "Delete failed — category me products hain.");
+      setMsg(err?.response?.data?.message || "Delete failed.");
     }
   };
 
@@ -169,7 +164,6 @@ const AdminCategories = () => {
                 Category Image {editingId ? "(upload to replace existing)" : "(optional)"}
               </label>
               <input
-                key={editingId ? `edit-${editingId}` : "add-new"}
                 type="file"
                 accept="image/*"
                 onChange={(e) => setImageFile(e.target.files[0] || null)}
@@ -183,16 +177,15 @@ const AdminCategories = () => {
             <div className="flex gap-3">
               <button
                 type="submit"
-                disabled={submitting}
-                className="bg-slate-900 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-slate-700 cursor-pointer disabled:opacity-50"
+                disabled={showForm && !name && !slug}
+                className="bg-slate-900 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-slate-700 cursor-pointer"
               >
-                {submitting ? "Saving..." : editingId ? "Update" : "Add Category"}
+                {editingId ? "Update" : "Add Category"}
               </button>
               <button
                 type="button"
-                onClick={() => resetForm(true)}
-                disabled={submitting}
-                className="text-sm font-medium px-5 py-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 cursor-pointer disabled:opacity-50"
+                onClick={() => resetForm()}
+                className="text-sm font-medium px-5 py-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 cursor-pointer"
               >
                 Cancel
               </button>

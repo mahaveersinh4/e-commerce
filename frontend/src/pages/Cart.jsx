@@ -6,12 +6,10 @@ import { useCart } from "../hook/cart.hook.jsx";
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { cart, loading, fetchCart, updateItem, removeItem, emptyCart } =
-    useCart();
+  const { cart, loading, fetchCart, updateItem, removeItem, emptyCart } = useCart();
 
   const [updatingItemId, setUpdatingItemId] = useState(null);
   const [promoCode, setPromoCode] = useState("");
-  const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoMsg, setPromoMsg] = useState("");
 
   // Scroll to top on mount
@@ -27,9 +25,9 @@ const Cart = () => {
     return acc + price * item.quantity;
   }, 0);
 
-  const finalTotal = Math.max(0, subtotal - promoDiscount);
+  const finalTotal = Math.max(0, subtotal - (promoCode === "RUDRAA10" ? Math.round(subtotal * 0.1) : 0));
 
-  // Handle quantity change (+ / -)
+  // Handle quantity change
   const handleQuantityChange = async (item, newQuantity) => {
     if (newQuantity < 1) return;
     try {
@@ -59,28 +57,20 @@ const Cart = () => {
     e.preventDefault();
     if (!promoCode.trim()) return;
 
-    if (promoCode.toUpperCase() === "RUDRAA10") {
-      const discount = Math.round(subtotal * 0.1);
-      setPromoDiscount(discount);
-      setPromoMsg("Coupon 'RUDRAA10' applied! (10% OFF)");
-    } else {
-      setPromoDiscount(0);
-      setPromoMsg("Invalid coupon code.");
-    }
+    const discount = promoCode.toUpperCase() === "RUDRAA10" ? Math.round(subtotal * 0.1) : 0;
+    setPromoDiscount(discount);
+    setPromoMsg(discount > 0 ? "Coupon 'RUDRAA10' applied! (10% OFF)" : "Invalid coupon code.");
   };
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col">
-      {/* Top Header Navbar */}
       <Header />
 
       <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 py-8 sm:px-6 lg:px-10">
         {/* Page Title */}
         <div className="border-b border-black/10 pb-6 mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight uppercase">
-              Shopping Bag
-            </h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight uppercase">Shopping Bag</h1>
             <p className="text-xs sm:text-sm text-black/60 mt-1 uppercase tracking-wider">
               {totalItems} {totalItems === 1 ? "Item" : "Items"} in your bag
             </p>
@@ -97,7 +87,7 @@ const Cart = () => {
           )}
         </div>
 
-        {/* Loading State */}
+        {/* Cart Items or Loading/Empty States */}
         {loading && !cart ? (
           <div className="py-20 text-center text-sm text-black/50 uppercase tracking-widest animate-pulse">
             Loading your shopping bag...
@@ -128,14 +118,14 @@ const Cart = () => {
             <Link
               to="/products"
               className="px-8 py-3 bg-black text-white text-xs font-bold uppercase tracking-widest hover:bg-black/85 transition-colors"
-            >
+              >
               Continue Shopping
             </Link>
           </div>
         ) : (
           /* Cart Grid */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            
+
             {/* Left Side: Cart Items (8 cols) */}
             <div className="lg:col-span-7 xl:col-span-8 space-y-6">
               {cartProducts.map((item) => {
@@ -150,9 +140,7 @@ const Cart = () => {
                 return (
                   <div
                     key={item._id}
-                    className={`flex flex-col sm:flex-row gap-4 p-4 border border-black/10 transition-opacity ${
-                      isItemUpdating ? "opacity-40 pointer-events-none" : "opacity-100"
-                    }`}
+                    className={`flex flex-col sm:flex-row gap-4 p-4 border border-black/10 transition-opacity ${isItemUpdating ? "opacity-40 pointer-events-none" : "opacity-100"}`}
                   >
                     {/* Item Image */}
                     <Link
@@ -181,35 +169,31 @@ const Cart = () => {
                               <p className="text-[11px] text-black/50 uppercase tracking-wider mt-0.5">
                                 {product.category.name}
                               </p>
-                            )}
-                          </div>
+                            )
+                          }
 
                           <p className="text-sm font-bold text-black shrink-0">
                             ₹{(product.price || 0) * item.quantity}
                           </p>
                         </div>
-
-                        {/* Size Badge */}
-                        {item.size && (
-                          <div className="mt-2 flex items-center gap-2">
-                            <span className="text-xs text-black/60 font-medium">
-                              Size:
-                            </span>
-                            <span className="px-2 py-0.5 border border-black/20 text-xs font-bold uppercase">
-                              {item.size}
-                            </span>
-                          </div>
-                        )}
                       </div>
+
+                      {/* Size Badge */}
+                      {item.size && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xs text-black/60 font-medium">Size:</span>
+                          <span className="px-2 py-0.5 border border-black/20 text-xs font-bold uppercase">
+                            {item.size}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Quantity Selector & Remove Button */}
                       <div className="mt-4 pt-3 border-t border-black/5 flex items-center justify-between">
                         <div className="flex items-center border border-black/20">
                           <button
                             type="button"
-                            onClick={() =>
-                              handleQuantityChange(item, item.quantity - 1)
-                            }
+                            onClick={() => handleQuantityChange(item, item.quantity - 1)}
                             disabled={item.quantity <= 1}
                             className="w-8 h-8 flex items-center justify-center text-sm font-bold hover:bg-black/5 disabled:opacity-30 cursor-pointer"
                           >
@@ -220,9 +204,7 @@ const Cart = () => {
                           </span>
                           <button
                             type="button"
-                            onClick={() =>
-                              handleQuantityChange(item, item.quantity + 1)
-                            }
+                            onClick={() => handleQuantityChange(item, item.quantity + 1)}
                             className="w-8 h-8 flex items-center justify-center text-sm font-bold hover:bg-black/5 cursor-pointer"
                           >
                             +
@@ -245,9 +227,7 @@ const Cart = () => {
 
             {/* Right Side: Order Summary (4 cols) */}
             <div className="lg:col-span-5 xl:col-span-4 bg-[#fafafa] border border-black/10 p-6 sticky top-24">
-              <h2 className="text-sm font-extrabold uppercase tracking-widest border-b border-black/10 pb-4 mb-4">
-                Order Summary
-              </h2>
+              <h2 className="text-sm font-extrabold uppercase tracking-widest border-b border-black/10 pb-4 mb-4">Order Summary</h2>
 
               <div className="space-y-3 text-xs sm:text-sm">
                 <div className="flex justify-between text-black/70">
@@ -255,10 +235,10 @@ const Cart = () => {
                   <span className="font-semibold text-black">₹{subtotal}</span>
                 </div>
 
-                {promoDiscount > 0 && (
+                {promoMsg && (
                   <div className="flex justify-between text-green-700 font-semibold">
                     <span>Discount</span>
-                    <span>-₹{promoDiscount}</span>
+                    {-₹{promoMsg.includes("10%") ? Math.round(subtotal * 0.1) : 0}}
                   </div>
                 )}
 
@@ -295,9 +275,7 @@ const Cart = () => {
                 </div>
                 {promoMsg && (
                   <p
-                    className={`mt-2 text-[11px] font-semibold uppercase ${
-                      promoDiscount > 0 ? "text-green-700" : "text-red-600"
-                    }`}
+                    className={`mt-2 text-[11px] font-semibold uppercase ${promoMsg.includes("10%") ? "text-green-700" : "text-red-600"}`}
                   >
                     {promoMsg}
                   </p>
@@ -306,12 +284,8 @@ const Cart = () => {
 
               {/* Total Price */}
               <div className="mt-6 pt-4 border-t border-black/10 flex items-center justify-between">
-                <span className="text-sm font-extrabold uppercase tracking-wider">
-                  Total Amount
-                </span>
-                <span className="text-xl font-black text-black">
-                  ₹{finalTotal}
-                </span>
+                <span className="text-sm font-extrabold uppercase tracking-wider">Total Amount</span>
+                <span className="text-xl font-black text-black">₹{finalTotal}</span>
               </div>
 
               {/* Checkout Button */}
@@ -339,12 +313,10 @@ const Cart = () => {
                 </div>
               </div>
             </div>
-
           </div>
         )}
       </main>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

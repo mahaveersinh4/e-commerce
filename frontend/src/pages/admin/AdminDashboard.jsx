@@ -1,13 +1,5 @@
 import { useState, useEffect } from "react";
 import { adminGetAllProducts, adminGetAllOrders } from "../../apis/adminAuth.api.jsx";
-import { getAllCategories } from "../../apis/category.api.jsx"; // public route, no admin token needed
-
-const statusColor = {
-  pending: "bg-yellow-100 text-yellow-700",
-  shipped: "bg-blue-100 text-blue-700",
-  delivered: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
-};
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({ products: 0, categories: 0, orders: 0 });
@@ -16,15 +8,16 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const [productsData, categoriesData, ordersData] = await Promise.all([
+      const [productsData, ordersData] = await Promise.all([
         adminGetAllProducts(),
-        getAllCategories(),     // public route
         adminGetAllOrders(),
       ]);
+      // Categories count lene ke liye alag API call ki zaroorat nahi - products se shuru karo
       setStats({
         products: productsData?.count || 0,
-        categories: categoriesData?.count || 0,
         orders: ordersData?.count || 0,
+        // Categories count ke liye hum products ka use karenge ya bas 0 rakhenge
+        categories: 0,
       });
       setRecentOrders(ordersData?.orders?.slice(0, 5) || []);
       setLoading(false);
@@ -48,9 +41,10 @@ const AdminDashboard = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-6 mb-8">
         {[
+
           { label: "Total Products", value: stats.products },
-          { label: "Categories", value: stats.categories },
           { label: "Total Orders", value: stats.orders },
+
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl p-6 border border-slate-200">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">{stat.label}</p>
@@ -82,7 +76,7 @@ const AdminDashboard = () => {
                   <td className="px-6 py-4 text-sm font-medium text-slate-800">₹{order.subtotal}</td>
                   <td className="px-6 py-4 text-sm text-slate-600 capitalize">{order.paymentMethod}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium capitalize ${statusColor[order.orderStatus] || "bg-slate-100 text-slate-600"}`}>
+                    <span className="inline-block px-2.5 py-1 rounded-full text-xs font-medium capitalize">
                       {order.orderStatus}
                     </span>
                   </td>

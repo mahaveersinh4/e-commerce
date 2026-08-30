@@ -7,25 +7,23 @@ import {
   adminGetAllCategories,
 } from "../../apis/adminAuth.api.jsx";
 
-const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
-
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    sku: "",
+    stock: "",
+    sizes: [],
+    images: [],
+  });
   const [msg, setMsg] = useState("");
-
-  // Form fields
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
-  const [sku, setSku] = useState("");
-  const [stock, setStock] = useState("");
-  const [selectedSizes, setSelectedSizes] = useState([]);
-  const [imageFiles, setImageFiles] = useState([]);
 
   // Page load me products aur categories lo
   useEffect(() => {
@@ -39,45 +37,18 @@ const AdminProducts = () => {
     loadData();
   }, []);
 
-  // Size select/deselect toggle
+  // Update form field
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value === "" ? "" : value }));
+  };
+
+  // Toggle size selection
   const toggleSize = (size) => {
-    if (selectedSizes.includes(size)) {
-      // Already selected hai → hata do
-      setSelectedSizes(selectedSizes.filter((s) => s !== size));
-    } else {
-      // Nahi tha → add karo
-      setSelectedSizes([...selectedSizes, size]);
-    }
-  };
-
-  // Edit button click → form fields fill karo
-  const handleEdit = (product) => {
-    setEditingProduct(product);
-    setName(product.name);
-    setDescription(product.description);
-    setPrice(product.price);
-    setCategory(product.category?._id || product.category);
-    setSku(product.sku);
-    setStock(product.stock);
-    setSelectedSizes(product.sizes || []);
-    setImageFiles([]);
-    setShowForm(true);
-    setMsg("");
-  };
-
-  // Form reset
-  const resetForm = () => {
-    setEditingProduct(null);
-    setName("");
-    setDescription("");
-    setPrice("");
-    setCategory("");
-    setSku("");
-    setStock("");
-    setSelectedSizes([]);
-    setImageFiles([]);
-    setShowForm(false);
-    setMsg("");
+    const sizes = formData.sizes.includes(size)
+      ? formData.sizes.filter((s) => s !== size)
+      : [...formData.sizes, size];
+    setFormData({ ...formData, sizes });
   };
 
   // Form submit — add ya update
@@ -85,49 +56,55 @@ const AdminProducts = () => {
     e.preventDefault();
     setMsg("");
 
+    const { name, price, category, sku } = formData;
     if (!name || !price || !category || !sku) {
       setMsg("Name, price, category aur SKU required hain.");
       return;
     }
 
-    if (!editingProduct && imageFiles.length === 0) {
-      setMsg("Kam se kam ek image upload karo.");
-      return;
-    }
-
-    // FormData banao — image upload ke liye
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("price", price);
-    formData.append("category", category);
-    formData.append("sku", sku);
-    formData.append("stock", stock || 0);
-
-    // Har size alag alag append karo
-    selectedSizes.forEach((size) => formData.append("sizes", size));
-
-    // Images append karo
-    imageFiles.forEach((file) => formData.append("images", file));
-
     try {
+      const formDataObj = {
+        name,
+        description: formData.description,
+        price: Number(price),
+        category,
+        sku,
+        stock: formData.stock || 0,
+        sizes: formData.sizes,
+      };
+
       if (editingProduct) {
         // Update karo
-        const res = await adminUpdateProduct(editingProduct._id, formData);
+        const res = await adminUpdateProduct(editingProduct._id, formDataObj);
         // List me update karo
         setProducts(products.map((p) => p._id === editingProduct._id ? res.product : p));
         setMsg("Product updated!");
-        resetForm();
       } else {
         // Naya add karo
-        const res = await adminCreateProduct(formData);
+        const res = await adminCreateProduct(formDataObj);
         setProducts([...products, res.product]);
         setMsg("Product added!");
-        resetForm();
       }
+      resetForm();
     } catch (err) {
       setMsg(err?.response?.data?.message || "Something went wrong.");
     }
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setEditingProduct(null);
+    setFormData({
+      name: "",
+      description: "",
+      price: "",
+      category: "",
+      sku: "",
+      stock: "",
+      sizes: [],
+      images: [],
+    });
+    setShowForm(false);
   };
 
   // Delete product
@@ -136,6 +113,7 @@ const AdminProducts = () => {
     try {
       await adminDeleteProduct(id);
       setProducts(products.filter((p) => p._id !== id));
+      setMsg("Product deleted!");
     } catch (err) {
       setMsg(err?.response?.data?.message || "Delete failed.");
     }
@@ -172,15 +150,15 @@ const AdminProducts = () => {
             {editingProduct ? "Edit Product" : "Add New Product"}
           </h3>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
             {/* Name + SKU */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">Product Name *</label>
                 <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={formData.name}
+                  onChange={(e) => handleChange(e)}
                   placeholder="e.g. Polo T-Shirt"
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400"
                 />
@@ -188,8 +166,8 @@ const AdminProducts = () => {
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">SKU *</label>
                 <input
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
+                  value={formData.sku}
+                  onChange={(e) => handleChange(e)}
                   placeholder="e.g. RUD-001"
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400"
                 />
@@ -200,8 +178,8 @@ const AdminProducts = () => {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1.5">Description</label>
               <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={formData.description}
+                onChange={(e) => handleChange(e)}
                 rows={3}
                 placeholder="Product description..."
                 className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400 resize-none"
@@ -215,8 +193,8 @@ const AdminProducts = () => {
                 <input
                   type="number"
                   min="0"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  value={formData.price}
+                  onChange={(e) => handleChange(e)}
                   placeholder="999"
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400"
                 />
@@ -226,8 +204,8 @@ const AdminProducts = () => {
                 <input
                   type="number"
                   min="0"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
+                  value={formData.stock}
+                  onChange={(e) => handleChange(e)}
                   placeholder="0"
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400"
                 />
@@ -235,8 +213,8 @@ const AdminProducts = () => {
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">Category *</label>
                 <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  value={formData.category}
+                  onChange={(e) => handleChange(e)}
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400 cursor-pointer"
                 >
                   <option value="">Select category</option>
@@ -247,23 +225,20 @@ const AdminProducts = () => {
               </div>
             </div>
 
-            {/* Sizes */}
+            {/* Sizes (optional) */}
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-2">Sizes (optional)</label>
               <div className="flex gap-2">
-                {SIZES.map((size) => (
+                ["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
                   <button
                     key={size}
                     type="button"
                     onClick={() => toggleSize(size)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border cursor-pointer transition-colors ${selectedSizes.includes(size)
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "border-slate-200 text-slate-600 hover:border-slate-400"
-                      }`}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium border cursor-pointer transition-colors {formData.sizes.includes(size) ? "bg-slate-900 text-white border-slate-900" : "border-slate-200 text-slate-600 hover:border-slate-400"}"
                   >
                     {size}
                   </button>
-                ))}
+                ))
               </div>
             </div>
 
@@ -276,11 +251,14 @@ const AdminProducts = () => {
                 type="file"
                 accept="image/*"
                 multiple
-                onChange={(e) => setImageFiles(Array.from(e.target.files).slice(0, 5))}
+                onChange={(e) => {
+                  const files = Array.from(e.target.files).slice(0, 5);
+                  setFormData({ ...formData, images: files });
+                }}
                 className="text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-100 file:text-xs file:font-medium cursor-pointer"
               />
-              {imageFiles.length > 0 && (
-                <p className="text-xs text-slate-400 mt-1">{imageFiles.length} file(s) selected</p>
+              {formData.images.length > 0 && (
+                <p className="text-xs text-slate-400 mt-1">{formData.images.length} file(s) selected</p>
               )}
             </div>
 
@@ -351,7 +329,7 @@ const AdminProducts = () => {
 
                   {/* Stock — 0 hoga toh red */}
                   <td className="px-6 py-4">
-                    <span className={`text-sm font-medium ${product.stock === 0 ? "text-red-500" : "text-slate-800"}`}>
+                    <span className={product.stock === 0 ? "text-red-500" : "text-slate-800"}>
                       {product.stock}
                     </span>
                   </td>
