@@ -2,12 +2,15 @@ import nodemailer from "nodemailer";
 
 // yahan apna gmail aur app password .env se aayega
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.EMAIL,         // tumhara_gmail@gmail.com
-    pass: process.env.EMAIL_PASSWORD, // 16 digit app password
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASSWORD,
   },
 });
+
 
 export const sendOtpEmail = async (toEmail, otp) => {
   await transporter.sendMail({
