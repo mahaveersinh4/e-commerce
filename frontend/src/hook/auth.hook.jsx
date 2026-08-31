@@ -23,7 +23,16 @@ export const useAuth = () => {
     }
   };
 
-  
+   const registerHandle = async ({ username, email, password }) => {
+    setError(null);
+    try {
+      await register({ username, email, password });
+      navigate("/verify-otp", { state: { email } });
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Registration failed.";
+      setError(msg);
+    }
+  };
 
   const verifyOtpHandle = async ({ email, otp }) => {
     setError(null);
