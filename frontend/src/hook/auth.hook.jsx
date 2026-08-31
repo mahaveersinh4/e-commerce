@@ -23,34 +23,7 @@ export const useAuth = () => {
     }
   };
 
-  const registerHandle = async ({ username, email, password }) => {
-  setError(null);
-
-  try {
-    console.log("1. Register start");
-
-    const response = await register({
-      username,
-      email,
-      password,
-    });
-
-    console.log("2. Register finished", response);
-
-    console.log("3. Navigating...");
-    
-    navigate("/verify-otp", {
-      state: { email },
-    });
-
-    console.log("4. Navigate called");
-  } catch (err) {
-    console.error("REGISTER ERROR:", err);
-    console.error("STATUS:", err?.response?.status);
-    console.error("DATA:", err?.response?.data);
-  }
-};
-
+  
 
   const verifyOtpHandle = async ({ email, otp }) => {
     setError(null);
