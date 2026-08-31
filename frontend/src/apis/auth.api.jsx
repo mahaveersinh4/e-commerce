@@ -55,14 +55,29 @@ api.interceptors.response.use(
 
 
 const register = async ({ username, email, password }) => {
+  console.log("REGISTER API START");
+
   try {
-    const response = await api.post("/auth/register", { username, email, password });
+    const response = await api.post("/auth/register", {
+      username,
+      email,
+      password,
+    });
+
+    console.log("REGISTER API RESPONSE:", response.status);
+    console.log("REGISTER API DATA:", response.data);
+
     return response.data;
   } catch (err) {
-    console.error(err);
+    console.error("REGISTER API ERROR:", err);
+    console.error("STATUS:", err?.response?.status);
+    console.error("DATA:", err?.response?.data);
     throw err;
+  } finally {
+    console.log("REGISTER API FINISHED");
   }
 };
+
 
 const verifyOtp = async ({ email, otp }) => {
   try {
