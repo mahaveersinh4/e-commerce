@@ -146,9 +146,10 @@ const ProductDetails = () => {
                         key={index}
                         type="button"
                         onClick={() => setSelectedImage(index)}
-                        className="shrink-0 overflow-hidden bg-[#f5f5f5] border-2 transition-all rounded-sm w-[56px] h-[70px] sm:w-[65px] sm:h-[82px] md:w-full md:h-[90px] lg:h-[102px] xl:h-[112px] 2xl:h-[125px]
-                          {selectedImage === index ? "border-black scale-[0.98]" : "border-transparent opacity-70 hover:opacity-100}"
-                        >
+                        className={`shrink-0 overflow-hidden bg-[#f5f5f5] border-2 transition-all rounded-sm w-[56px] h-[70px] sm:w-[65px] sm:h-[82px] md:w-full md:h-[90px] lg:h-[102px] xl:h-[112px] 2xl:h-[125px] ${
+                          selectedImage === index ? "border-black scale-[0.98]" : "border-transparent opacity-70 hover:opacity-100"
+                        }`}
+                      >
                         <img
                           src={image}
                           alt={`${product?.name || "Product"} ${index + 1}`}
@@ -248,15 +249,14 @@ const ProductDetails = () => {
                   <div className={`mb-3 p-3 text-xs font-semibold text-center tracking-wider ${cartMsg.isError ? "bg-red-50 text-red-600 border-red-200" : "bg-green-50 text-green-700 border-green-200"}`}>
                     {cartMsg.text}
                   </div>
-                )
+                )}
 
                 {/* Add To Bag */}
                 <button
                   type="button"
                   onClick={handleAddToBag}
-                  disabled={addingToCart}
                   className="w-full h-11 sm:h-12 md:h-[50px] bg-black text-white text-[12px] sm:text-[13px] font-semibold uppercase tracking-wide hover:bg-black/85 active:scale-[0.99] transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
-                  {addingToCart ? "Adding to Bag..." : "Add to Bag"}
+                  Add to Bag
                 </button>
 
                 {/* Accordions - DETAILS, REVIEWS, DELIVERY, RETURNS */}

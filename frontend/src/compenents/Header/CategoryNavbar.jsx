@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useCategory } from "../../hook/category.hook.jsx";
 
 const CategoryNavbar = () => {
-  const { categories, loading } = useCategory();
+  const { categories, loading, fetchCategories } = useCategory();
 
   // Fetch categories on mount
   useEffect(() => {

@@ -107,6 +107,22 @@ const AdminProducts = () => {
     setShowForm(false);
   };
 
+  // Edit product
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name || "",
+      description: product.description || "",
+      price: product.price || "",
+      category: product.category?._id || product.category || "",
+      sku: product.sku || "",
+      stock: product.stock ?? "",
+      sizes: product.sizes || [],
+      images: [],
+    });
+    setShowForm(true);
+  };
+
   // Delete product
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
@@ -157,8 +173,9 @@ const AdminProducts = () => {
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">Product Name *</label>
                 <input
+                  name="name"
                   value={formData.name}
-                  onChange={(e) => handleChange(e)}
+                  onChange={handleChange}
                   placeholder="e.g. Polo T-Shirt"
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400"
                 />
@@ -166,8 +183,9 @@ const AdminProducts = () => {
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">SKU *</label>
                 <input
+                  name="sku"
                   value={formData.sku}
-                  onChange={(e) => handleChange(e)}
+                  onChange={handleChange}
                   placeholder="e.g. RUD-001"
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400"
                 />
@@ -178,8 +196,9 @@ const AdminProducts = () => {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1.5">Description</label>
               <textarea
+                name="description"
                 value={formData.description}
-                onChange={(e) => handleChange(e)}
+                onChange={handleChange}
                 rows={3}
                 placeholder="Product description..."
                 className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400 resize-none"
@@ -191,10 +210,11 @@ const AdminProducts = () => {
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">Price (₹) *</label>
                 <input
+                  name="price"
                   type="number"
                   min="0"
                   value={formData.price}
-                  onChange={(e) => handleChange(e)}
+                  onChange={handleChange}
                   placeholder="999"
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400"
                 />
@@ -202,10 +222,11 @@ const AdminProducts = () => {
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">Stock</label>
                 <input
+                  name="stock"
                   type="number"
                   min="0"
                   value={formData.stock}
-                  onChange={(e) => handleChange(e)}
+                  onChange={handleChange}
                   placeholder="0"
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400"
                 />
@@ -213,8 +234,9 @@ const AdminProducts = () => {
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">Category *</label>
                 <select
+                  name="category"
                   value={formData.category}
-                  onChange={(e) => handleChange(e)}
+                  onChange={handleChange}
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-slate-400 cursor-pointer"
                 >
                   <option value="">Select category</option>
@@ -229,16 +251,20 @@ const AdminProducts = () => {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-2">Sizes (optional)</label>
               <div className="flex gap-2">
-                ["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
                   <button
                     key={size}
                     type="button"
                     onClick={() => toggleSize(size)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium border cursor-pointer transition-colors {formData.sizes.includes(size) ? "bg-slate-900 text-white border-slate-900" : "border-slate-200 text-slate-600 hover:border-slate-400"}"
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border cursor-pointer transition-colors ${
+                      formData.sizes.includes(size)
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "border-slate-200 text-slate-600 hover:border-slate-400"
+                    }`}
                   >
                     {size}
                   </button>
-                ))
+                ))}
               </div>
             </div>
 

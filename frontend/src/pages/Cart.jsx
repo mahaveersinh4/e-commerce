@@ -169,8 +169,8 @@ const Cart = () => {
                               <p className="text-[11px] text-black/50 uppercase tracking-wider mt-0.5">
                                 {product.category.name}
                               </p>
-                            )
-                          }
+                            )}
+                          </div>
 
                           <p className="text-sm font-bold text-black shrink-0">
                             ₹{(product.price || 0) * item.quantity}
@@ -238,7 +238,7 @@ const Cart = () => {
                 {promoMsg && (
                   <div className="flex justify-between text-green-700 font-semibold">
                     <span>Discount</span>
-                    {-₹{promoMsg.includes("10%") ? Math.round(subtotal * 0.1) : 0}}
+                    <span>-₹{promoMsg.includes("10%") ? Math.round(subtotal * 0.1) : 0}</span>
                   </div>
                 )}
 
