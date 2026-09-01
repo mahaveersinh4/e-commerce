@@ -255,7 +255,7 @@ const ProductDetails = () => {
                 <button
                   type="button"
                   onClick={handleAddToBag}
-                  className="w-full h-11 sm:h-12 md:h-[50px] bg-black text-white text-[12px] sm:text-[13px] font-semibold uppercase tracking-wide hover:bg-black/85 active:scale-[0.99] transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
+                  className="w-full h-11 sm:h-12 md:h-[50px] bg-black text-white text-[12px] sm:text-[13px] font-semibold uppercase tracking-wide hover:bg-black/85 active:scale-[0.99] transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer mt-5">
                   Add to Bag
                 </button>
 
