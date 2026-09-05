@@ -17,7 +17,7 @@ const ForgotPassword = () => {
       {/* Top Brand */}
       <div className="w-full h-20 border-b border-black/10 flex items-center justify-center">
         <h1 className="text-3xl font-black tracking-[-0.08em]">
-          SNITCH
+          RUDRA
         </h1>
       </div>
 
